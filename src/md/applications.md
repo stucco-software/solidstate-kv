@@ -1,39 +1,47 @@
 ---
 type: Documentation
-prefLabel: Applications
+prefLabel: DB
 ---
 
-```
-const appConfig = {
-  redirect_uri,
-  client_id
-}
-const app = solidApp(appConfig)
-const db = app.webID(url)
-<!-- or -->
-const db = app.provider(URL)
-```
+SolidState is an offline-first, realtime, multiplayer sync engine for RDF triples.
 
-Other applications exist too, for non-SOLID SPARQL providers:
+Create a local store:
 
 ```
-const appConfig = {
-  endpoint,
-  username,
-  password
-}
-const app = sparqlApp(appConfig)
-const db = app()
+import SolidState from "solidstate"
+const db = new SolidState()
 ```
 
-Or even local-first solutions for keeping all data on-device:
-
-```
-const app = localApp()
-const db = app()
-```
-
-> If we store a local cache to speed up requests, how can that cache (which we can set locally without being authenticated) interact with the remote store in a unauthenticated session?
-
-<p><mark>Assme something like, SPARQL endpoint or Local storage; we can persist multiple graphs seperate from each other as named graphs. Do we want to do that by default? Do we want to segregate them by db id or app id?
+<p><mark>Assume something like, SPARQL endpoint or Local storage; we can persist multiple graphs seperate from each other as named graphs. Do we want to do that by default? Do we want to segregate them by db id or app id?
 </mark></p>
+
+
+## Replication & Sync
+
+We want to replicate our local store to other devices, as well as servers. Some places where we want to sync things:
+
+1. Other browser sessions. How do our browser sessions find each other?
+2. Centralized triplestores, like Jena, Triply, AWS Neptune, or Oxigraph. How do we sync that?
+3. Solid PODs attached to WebID, like https://solidid.stucco.software/ How do we sync that?
+
+> Something like `zero` is a microservice that sits in front of a store. `gun.eco` is honestly similar, with peers connecting to a service that handles signalling and persistence. A solidstate microservice would be able to handle the peer-to-peer connections as well as emit events when things change, then provide configuration options to attach to triplestores/pods, as well as manage access control.
+
+Ideally we want ALL OF THE ABOVE AT THE SAME TIME, or at least 1 AND (2 OR 3).
+
+```
+// pouch style
+const db = new SolidState()
+const remote = new SolidState('//triplestore.example.com')
+db.sync(remote)
+
+// gun.eco style
+const db = SolidState(['//triplestore.example.com'])
+// or
+const db = SolidState({peers: ['//triplestore.example.com']})
+````
+
+## Conflict Resolution
+
+> Create a metadata subgraph to handle either pouch-style commit and revision history _or_ gun.eco style "hypothetical amnesia machine" vector conflicts. It would be cool to have:
+> 1. Full subject revision history
+> 2. Flat access to most current subject state

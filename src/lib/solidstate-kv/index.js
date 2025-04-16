@@ -1,7 +1,9 @@
 import * as jsonld from 'jsonld'
+import { arrayify } from '$lib/arrayify'
 
 const string   = 'http://www.w3.org/2001/XMLSchema#string'
-const DateTime = 'http://www.w3.org/2001/XMLSchema#dateTime'
+const dateTime = 'http://www.w3.org/2001/XMLSchema#dateTime'
+const boolean = 'http://www.w3.org/2001/XMLSchema#boolean'
 
 const context = {
   "@base": "https://vocab.rdf.systems/",
@@ -34,8 +36,62 @@ const toTriples = async (doc) => {
 const post = (persist) => async (id, kv) => {
   let doc = contextualize(id, kv)
   const triples = await toTriples(doc)
-  const result = persist({ins: triples})
+  const result = await persist({ins: triples})
   return doc
+}
+
+// @todo
+// cast other types like dates and times and shit
+const castLiteral = (type, lit) => {
+  let result
+  switch (type) {
+    case boolean:
+      result = lit == 'true' ? true : false
+      break;
+    default:
+      result = lit
+  }
+  return result
+}
+
+const typeValue = (o) => {
+  let literal = o.value.replace(context['@base'], '')
+  let v
+  switch (o.type) {
+    case 'literal':
+      v = castLiteral(o.datatype, literal)
+      break;
+    case 'uri':
+      v = {
+        "@id": literal
+      }
+      break;
+    default:
+      v = literal
+  }
+  return v
+}
+
+const getEntity = (getter) => async (id, shape) => {
+  let response = await getter(`${context['@base']}${id}`)
+  let entity = response.results.bindings.reduce((acc, cur) => {
+    let k = cur.p.value.replace(context['@base'] + context['@vocab'], '')
+    let v = typeValue(cur.o)
+    acc[k]
+      ? acc[k] = [...arrayify(acc[k]), v]
+      : acc[k] = v
+    return acc
+  }, {
+    "@id": id
+  })
+
+  return entity
+}
+
+const clear = (persist) => async () => {
+  const result = await persist({del: `?s ?p ?o`})
+  const response = await result.text()
+  return response
 }
 
 const solidApp = ({redirect_uri, client_id}) => () => {
@@ -46,24 +102,84 @@ const solidApp = ({redirect_uri, client_id}) => () => {
   }
 }
 
+const structureUpdate = ({ins, del}) => {
+  let prefixes = ``
+  let query = `
+    ${prefixes}
+  `
+  if (ins) {
+    query = `${query}
+      insert {
+        ${ins}
+      }
+    `
+  }
+  if (del) {
+    query = `${query}
+      delete {
+        ${del}
+      }
+    `
+  }
+  query = `${query}
+      where {
+        optional { ?s ?p ?o }
+      }
+    `
+  return query
+}
+
 export const sparqlApp = ({ endpoint }) => () => {
   // create a fetch fn with endpoint and credential headers
   // post and get to that store
   // under a subgraph???
-  const persist = ({ins = '', del = ''}) => {
-    console.log(`fetch(${endpoint}insert),`)
-    console.log(`insert {
-      ${ins}
-    } delete {
-      ${del}
-    } where {
-      optional { ?s ?p ?o }
-    }`)
-    return true
+  const persist = async ({ins = null, del = null}) => {
+    let response = await fetch(`${endpoint}update`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded'
+      },
+      body: new URLSearchParams({
+        'update': structureUpdate({ins, del})
+      })
+    }).catch((error) => {
+      console.error('Error:', error);
+    })
+    return response
+  }
+
+  const getter = async (id) => {
+    console.log( `
+        select *
+        where {
+          <${id}> ?p ?o .
+        }
+      `)
+    let response = await fetch(`${endpoint}query`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded'
+      },
+      body: new URLSearchParams({
+      'query': `
+        select *
+        where {
+          <${id}> ?p ?o .
+        }
+      `
+      })
+    }).catch((error) => {
+      console.error('Error:', error);
+    })
+
+    let json = await response.json()
+    return json
   }
 
   return {
-    post: post(persist)
+    post: post(persist),
+    get: getEntity(getter),
+    clear: clear(persist)
   }
 }
 
@@ -72,13 +188,7 @@ export const localApp = () => () => {
   // then persist that data into local storage
   // then load that data _from_ local storage on init.
   const persist = ({ins = '', del = ''}) => {
-    console.log(`insert {
-      ${ins}
-    } delete {
-      ${del}
-    } where {
-      optional { ?s ?p ?o }
-    }`)
+    console.log(structureUpdate({ins, del}))
     return true
   }
 

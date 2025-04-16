@@ -11,6 +11,7 @@ hasPart:
   - get
 ---
 
-An example of how to authenticate an application with Solid, and persist data to a Solid Pod.
+SolidState KV is a graph-based realtime replication engine for creating offline first multiplayer applications. SolidState can replicate data peer-to-peer, through a persitent triplestore, or on Solid PODs.
+
 
 Explore how it works on the [`KV Playground`](/playground)
