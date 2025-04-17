@@ -10,11 +10,10 @@ const context = {
   "@vocab": "#"
 }
 
-const contextualize = (id, kv) => {
+const contextualize = (doc) => {
   return {
     "@context": context,
-    "@id": id,
-    ...kv
+    ...doc
   }
 }
 
@@ -45,8 +44,9 @@ const post = (persist) => async (doc) => {
     }
     Doc['@id'] = `uuid:${uuid}`
   }
-  // let doc = contextualize(id, kv)
-  // const triples = await toTriples(doc)
+  let ld = contextualize(Doc)
+  const triples = await toTriples(ld)
+  console.log(triples)
   // const result = await persist({ins: triples})
   return Doc
 }
