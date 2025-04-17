@@ -112,5 +112,5 @@ This will return the entire updated Entity:
 </code></pre>
 
 <blockquote>
-  OH NO! That's not working! That's because our library isn't actually persisting any data, either in-memory or to a disk. It's just returning inputs!
+  OH NO! That's not working! That's because our library isn't actually persisting any data, either in-memory or to a disk. It's just returning inputs! Before actually putting any of the serious logic into this, this page is putting 64k of JS over th wire.
 </blockquote>
