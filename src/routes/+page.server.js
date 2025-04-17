@@ -30,6 +30,5 @@ export async function load({ params }){
       }
     }
   })
-  console.log(docTree)
   return docTree
 }

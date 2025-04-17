@@ -47,7 +47,6 @@ if (import.meta.vitest) {
   })
 }
 export const getGraph = async () => {
-  console.log('get graph plz')
   let data = {
     "@context": context,
     "@graph": await getMarkdownMeta()

@@ -33,11 +33,22 @@ const toTriples = async (doc) => {
   }
 }
 
-const post = (persist) => async (id, kv) => {
-  let doc = contextualize(id, kv)
-  const triples = await toTriples(doc)
-  const result = await persist({ins: triples})
-  return doc
+const post = (persist) => async (doc) => {
+  let Doc = structuredClone(doc)
+  if (!Doc['@id']) {
+    let uuid
+    let canUUID = typeof self !== 'undefined'
+    if (canUUID) {
+      uuid = self.crypto.randomUUID()
+    } else {
+      uuid = 'some-uuid-lol'
+    }
+    Doc['@id'] = `uuid:${uuid}`
+  }
+  // let doc = contextualize(id, kv)
+  // const triples = await toTriples(doc)
+  // const result = await persist({ins: triples})
+  return Doc
 }
 
 // @todo
@@ -173,7 +184,7 @@ export const sparqlApp = ({ endpoint }) => () => {
     })
 
     let json = await response.json()
-    return json
+    return jsonx
   }
 
   return {
@@ -196,3 +207,34 @@ export const localApp = () => () => {
     post: post(persist)
   }
 }
+
+const localPersister = () => {
+  switch(true) {
+    case typeof window !== 'undefined':
+      return "IndexedDB in the Browser";
+    case typeof fs !== 'undefined':
+      return "Filesystem in Node";
+    default:
+      return "In-Memory, non peristent"
+  }
+}
+
+const configureStore = (config) => {
+  switch(true) {
+    case Array.isArray(config):
+      return "Array of Server Configs";
+    default:
+      return localPersister()
+  }
+}
+
+const SolidState = (config) => {
+  const persist = configureStore(config)
+
+  return {
+    version: "0.0.1",
+    persister: persist,
+    post: post()
+  }
+}
+export default SolidState

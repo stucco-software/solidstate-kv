@@ -1,7 +1,6 @@
 <script type="text/javascript">
   import { arrayify } from '$lib/arrayify'
   export let data
-  console.log(data)
 </script>
 <main>
 

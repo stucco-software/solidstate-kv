@@ -3,12 +3,21 @@
 
   export let src
 
+  function wait(ms) {
+    return new Promise((resolve) => {
+      setTimeout(() => {
+        resolve("resolved");
+      }, ms);
+    });
+  }
+
   let AsyncFunction = Object.getPrototypeOf(async function(){}).constructor
 
   let result = '…'
 
   onMount(async () => {
     let fn = new AsyncFunction(src)
+    await wait(500)
     result = await fn()
   })
 
