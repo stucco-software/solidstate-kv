@@ -51,6 +51,12 @@ const post = (persist) => async (doc) => {
   return Doc
 }
 
+const put = (persist) => async (id, update) => {
+  console.log('put!')
+  console.log(id, update)
+  return update
+}
+
 // @todo
 // cast other types like dates and times and shit
 const castLiteral = (type, lit) => {
@@ -105,14 +111,6 @@ const clear = (persist) => async () => {
   return response
 }
 
-const solidApp = ({redirect_uri, client_id}) => () => {
-  // solid app should auth, store creds,
-  // init from creds, then psh to a sparql endpoint.
-  return {
-    post: () => {}
-  }
-}
-
 const structureUpdate = ({ins, del}) => {
   let prefixes = ``
   let query = `
@@ -138,74 +136,6 @@ const structureUpdate = ({ins, del}) => {
       }
     `
   return query
-}
-
-export const sparqlApp = ({ endpoint }) => () => {
-  // create a fetch fn with endpoint and credential headers
-  // post and get to that store
-  // under a subgraph???
-  const persist = async ({ins = null, del = null}) => {
-    let response = await fetch(`${endpoint}update`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/x-www-form-urlencoded'
-      },
-      body: new URLSearchParams({
-        'update': structureUpdate({ins, del})
-      })
-    }).catch((error) => {
-      console.error('Error:', error);
-    })
-    return response
-  }
-
-  const getter = async (id) => {
-    console.log( `
-        select *
-        where {
-          <${id}> ?p ?o .
-        }
-      `)
-    let response = await fetch(`${endpoint}query`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/x-www-form-urlencoded'
-      },
-      body: new URLSearchParams({
-      'query': `
-        select *
-        where {
-          <${id}> ?p ?o .
-        }
-      `
-      })
-    }).catch((error) => {
-      console.error('Error:', error);
-    })
-
-    let json = await response.json()
-    return jsonx
-  }
-
-  return {
-    post: post(persist),
-    get: getEntity(getter),
-    clear: clear(persist)
-  }
-}
-
-export const localApp = () => () => {
-  // local app should create an in-memory SPARQL store
-  // then persist that data into local storage
-  // then load that data _from_ local storage on init.
-  const persist = ({ins = '', del = ''}) => {
-    console.log(structureUpdate({ins, del}))
-    return true
-  }
-
-  return {
-    post: post(persist)
-  }
 }
 
 const localPersister = () => {
@@ -234,7 +164,8 @@ const SolidState = (config) => {
   return {
     version: "0.0.1",
     persister: persist,
-    post: post()
+    post: post(),
+    put: put()
   }
 }
 export default SolidState

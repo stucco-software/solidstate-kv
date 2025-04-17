@@ -20,18 +20,24 @@
   let hummus = {
     "@type": "Food",
     "name": "Hummus",
-    "ingredient": "Chickpeas and Lemon"
+    "ingredient": ["Garbanzo Beans", "Lemon"]
   }
   let refChickpeas
   let chickpeas = {
     "@id": "chickpeas",
     "@type": "Ingredient",
-    "name": "Chickpeas",
-    "ingredient": "Chickpeas and Lemon"
+    "name": "Chickpeas"
+  }
+
+  let refHummusUpdate
+  let hummusUpdate = {
+    "ingredient": ["Chickpeas", "Lemon"]
   }
   const run = async () => {
+    console.log('run…')
     refHummus = await db.post(hummus)
     refChickpeas = await db.post(chickpeas)
+    refHummusUpdate = await db.put(refHummus['@id'], hummusUpdate)
   }
   run()
 
@@ -61,6 +67,10 @@ This will return
 {writeDB}
 </pre>
 
+<h2>Write Data</h2>
+
+<h3>Create A new Entity</h3>
+
 Write a new document to the store with <code>db.post()</code>
 
 <pre><code>
@@ -82,7 +92,25 @@ let ref = await db.post({r(chickpeas)})
 
 <pre><code>
 // ref
-{JSON.stringify(refChickpeas, null, 2)}
+{r(refChickpeas)}
 </code></pre>
 
+<h3>Update an Entity</h3>
 
+Update an Entity with the <code>db.put()</code> function, passing the Entities <code>@id</code> as the first parameter, and the new keys as the second.
+
+<pre><code>
+{#if refHummus}
+  let ref = await db.put("{refHummus['@id']}", {r(hummusUpdate)})
+{/if}
+</code></pre>
+
+This will return the entire updated Entity:
+<pre><code>
+// ref
+{r(refHummusUpdate)}
+</code></pre>
+
+<blockquote>
+  OH NO! That's not working! That's because our library isn't actually persisting any data, either in-memory or to a disk. It's just returning inputs!
+</blockquote>
