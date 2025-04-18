@@ -1,6 +1,12 @@
 import * as jsonld from 'jsonld'
 import { arrayify } from '$lib/arrayify'
 
+// import { MemoryLevel } from 'memory-level'
+import { BrowserLevel } from 'browser-level';
+import { DataFactory } from 'rdf-data-factory'
+import { Quadstore } from 'quadstore'
+import { Engine } from 'quadstore-comunica'
+
 const string   = 'http://www.w3.org/2001/XMLSchema#string'
 const dateTime = 'http://www.w3.org/2001/XMLSchema#dateTime'
 const boolean = 'http://www.w3.org/2001/XMLSchema#boolean'
@@ -158,8 +164,31 @@ const configureStore = (config) => {
   }
 }
 
-const SolidState = (config) => {
+const SolidState = async (config) => {
   const persist = configureStore(config)
+  const backend = new BrowserLevel('SolidState', { valueEncoding: 'json' })
+  const df = new DataFactory()
+  const store = new Quadstore({backend, dataFactory: df})
+  const engine = new Engine(store)
+
+  await store.open()
+
+  await store.put(
+    df.quad(
+      df.namedNode('http://example.com/subject'),
+      df.namedNode('http://example.com/predicate'),
+      df.namedNode('http://example.com/object'),
+      df.defaultGraph(),
+    )
+  )
+
+  // Queries the store via RDF/JS Query interfaces
+  const bindingsStream = await engine.queryBindings('SELECT * {?s ?p ?o}');
+  bindingsStream
+    .on('data', binding => {
+      console.log('neat!')
+      console.log(binding.get('s').value, binding.get('p').value, binding.get('o').value)
+    })
 
   return {
     version: "0.0.1",
