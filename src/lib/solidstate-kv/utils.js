@@ -1,6 +1,6 @@
 import * as jsonld from 'jsonld'
 
-const context = {
+export const context = {
   "@base": "https://vocab.rdf.systems/",
   "@vocab": "#"
 }
@@ -10,6 +10,12 @@ export const contextualize = (doc) => {
     "@context": context,
     ...doc
   }
+}
+
+export const compact = async (doc) => {
+  const compacted = await jsonld.compact(doc, context)
+  delete compacted['@context']
+  return compacted
 }
 
 export const toTriples = async (doc) => {

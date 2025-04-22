@@ -1,14 +1,30 @@
 // import { MemoryLevel } from 'memory-level'
-import { BrowserLevel } from 'browser-level';
+import { BrowserLevel } from 'browser-level'
 import { Quadstore } from 'quadstore'
 import { Engine } from 'quadstore-comunica'
+import { DataFactory } from 'rdf-data-factory'
+
+const backend = new BrowserLevel('SolidState', { valueEncoding: 'json' })
+const df = new DataFactory()
+const store = new Quadstore({backend, dataFactory: df})
+const engine = new Engine(store)
+
+const querystore = () => {
+  return async (query) => {
+    await store.open()
+    let stream = await engine.queryQuads(query)
+    let doc = {}
+    const quads = await stream.toArray()
+    quads.forEach(quad => {
+      doc['@id'] = quad.subject.value
+      doc[quad.predicate.value.replace('http://www.w3.org/1999/02/22-rdf-syntax-ns#', '@')] = quad.object.value
+    })
+    console.log(doc)
+    return doc
+  }
+}
 
 const quadstore = () => {
-  const backend = new BrowserLevel('SolidState', { valueEncoding: 'json' })
-  const store = new Quadstore({backend})
-  const engine = new Engine(store)
-
-
   return async ({ins, del}) => {
     let err
     await store.open()
@@ -20,23 +36,24 @@ const quadstore = () => {
       ${del}
     }`
     let query = `
-      ${ins ? insQ : ''}
       ${del ? delQ : ''}
+      ${ins ? insQ : ''}
       where {
         optional {?s ?p ?o .}
       }
     `
-    console.log(query)
-    engine.queryVoid(query)
-    console.log('ok?')
-    return err
+    let result = await engine.queryVoid(query)
+    return result
   }
 }
 
 const localPersister = () => {
   switch(true) {
     case typeof window !== 'undefined':
-      return quadstore();
+      return {
+        persist: quadstore(),
+        getter: querystore()
+      }
     case typeof fs !== 'undefined':
       return "Filesystem in Node";
     default:

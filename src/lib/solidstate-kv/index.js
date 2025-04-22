@@ -13,12 +13,12 @@ const configureStore = (config) => {
 }
 
 const SolidState = async (config) => {
-  const persist = configureStore(config)
+  const {persist, getter} = configureStore(config)
   return {
     version: "0.0.1",
     persister: persist,
-    post: post(persist),
-    put: put(persist),
+    post: post(persist, getter),
+    put: put(persist, getter),
     get: getEntity(persist),
     clear: clear(persist)
   }
