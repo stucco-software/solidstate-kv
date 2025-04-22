@@ -35,6 +35,9 @@
     refHummus = await db.post(hummus)
     refChickpeas = await db.post(chickpeas)
     refHummusUpdate = await db.put(refHummus['@id'], hummusUpdate)
+
+    let clear = await db.clear()
+    console.log(clear)
   }
   onMount(async () => {
     let db = await SolidState()
@@ -114,5 +117,5 @@ This will return the entire updated Entity:
 </code></pre>
 
 <blockquote>
-  OH NO! That's not working! That's because our library isn't actually persisting any data, either in-memory or to a disk. It's just returning inputs! Before actually putting any of the serious logic into this, this page is putting 64k of JS over th wire. After we import the <code>JSON-LD</code> lib and use it to turn a JSON doc into triples, we put 64kb over the wire. So that's nice!
+  OH NO! That's not working! That's because our library isn't actually persisting any data, either in-memory or to a disk. It's just returning inputs! Before actually putting any of the serious logic into this, this page is putting 64k of JS over th wire. After we import the <code>JSON-LD</code> lib and use it to turn a JSON doc into triples, we put 64kb over the wire. So that's nice! But, adding a Triplestore & IndexDB persistence layer brings the total over the wire up to 273k, unpacking to 1.33mb. Less good!
 </blockquote>
