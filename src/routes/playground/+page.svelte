@@ -11,7 +11,9 @@
   let writeDB = `{
   version: "0.0.1",
   persister: persist,
-  post: fn
+  post: fn,
+  put: fn,
+  get: fn
 }`
 
   let refHummus

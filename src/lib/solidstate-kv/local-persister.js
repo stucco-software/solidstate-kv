@@ -1,3 +1,4 @@
+import {arrayify} from './utils'
 // import { MemoryLevel } from 'memory-level'
 import { BrowserLevel } from 'browser-level'
 import { Quadstore } from 'quadstore'
@@ -9,6 +10,7 @@ const df = new DataFactory()
 const store = new Quadstore({backend, dataFactory: df})
 const engine = new Engine(store)
 
+
 const querystore = () => {
   return async (query) => {
     await store.open()
@@ -17,9 +19,14 @@ const querystore = () => {
     const quads = await stream.toArray()
     quads.forEach(quad => {
       doc['@id'] = quad.subject.value
-      doc[quad.predicate.value.replace('http://www.w3.org/1999/02/22-rdf-syntax-ns#', '@')] = quad.object.value
+      let p = quad.predicate.value.replace('http://www.w3.org/1999/02/22-rdf-syntax-ns#', '@')
+      let o = quad.object.value
+      if (doc[p]) {
+        doc[p] = [...arrayify(doc[p]), o]
+      } else {
+        doc[p] = o
+      }
     })
-    console.log(doc)
     return doc
   }
 }
@@ -27,6 +34,7 @@ const querystore = () => {
 const quadstore = () => {
   return async ({ins, del}) => {
     let err
+    console.log(ins)
     await store.open()
 
     let insQ = `insert {
