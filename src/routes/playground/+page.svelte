@@ -10,7 +10,8 @@
 
   let writeDB = `{
   version: "0.0.1",
-  persister: persist,
+  persister: fn,
+  getter: fn,
   post: fn,
   put: fn,
   get: fn

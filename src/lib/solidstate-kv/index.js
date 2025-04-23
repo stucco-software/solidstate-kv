@@ -17,6 +17,7 @@ const SolidState = async (config) => {
   return {
     version: "0.0.1",
     persister: persist,
+    getter: getter,
     post: post(persist, getter),
     put: put(persist, getter),
     patch: patch(persist, getter),
