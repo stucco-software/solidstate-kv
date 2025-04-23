@@ -1,5 +1,5 @@
 import {
-  context, contextualize, compact, toTriples, castLiteral, typeValue
+  context, contextualize, compact, toTriples, castLiteral, typeValue, arrayify
 } from './utils'
 
 export const post = (persist, getter) => async (doc) => {
@@ -45,6 +45,30 @@ export const patch = (persist, getter) => async (id, update) => {
   const result = await persist({ins})
   const doc = await getter(`construct {<${id}> ?p ?o } where {<${id}> ?p ?o .}`)
   let returnLD = await compact(doc)
+  return returnLD
+}
+
+export const deleteStatements = (persist, getter) => async (id, update) => {
+  // THis is like the rest of PUT!
+  let del
+  if (update) {
+    del = Object
+      .keys(update)
+      .map(p => Object
+        .entries(update)[0][1]
+        .map(o => `<${id}> ${p.includes(':') ? p : ns(p)} ${o.includes(':') ? `<${o}>` : `"${o}"`} . `)
+      )
+      .flat()
+      .join(' ')
+  } else {
+    del = `<${id}> ?p ?o .`
+  }
+  const result = await persist({del})
+  const doc = await getter(`construct {<${id}> ?p ?o } where {<${id}> ?p ?o .}`)
+  let returnLD = await compact(doc)
+  if (!returnLD['@id']) {
+    return null
+  }
   return returnLD
 }
 

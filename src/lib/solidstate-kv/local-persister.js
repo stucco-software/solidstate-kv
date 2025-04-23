@@ -10,7 +10,6 @@ const df = new DataFactory()
 const store = new Quadstore({backend, dataFactory: df})
 const engine = new Engine(store)
 
-
 const querystore = () => {
   return async (query) => {
     await store.open()

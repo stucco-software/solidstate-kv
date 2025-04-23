@@ -38,11 +38,22 @@
   let hummusPatch = {
     "ingredient": "Olive Oil"
   }
+
+  let refHummusLineDel = "…"
+  let hummusLineDel = {
+    "ingredient": ["Chickpeas", "Lemon"]
+  }
+
+  let refHummusDel = "…"
+
   const run = async (db) => {
     refHummus = await db.post(hummus)
     refChickpeas = await db.post(chickpeas)
     refHummusUpdate = await db.put(refHummus['@id'], hummusUpdate)
     refHummusPatch = await db.patch(refHummus['@id'], hummusPatch)
+    refHummusLineDel = await db.delete(refHummus['@id'], hummusLineDel)
+    refHummusDel = await db.delete(refHummus['@id'])
+
     let clear = await db.clear()
   }
   onMount(async () => {
@@ -64,7 +75,7 @@
 <h2>Initialize the Database</h2>
 
 <p>
-  To create a local database, call the `SolidState()` function.
+  To create a local database, call the <code>SolidState()</code> function.
 </p>
 
 <pre><code>
@@ -134,4 +145,33 @@ This will return the entire updated Entity:
 <pre><code>
 // ref
 {r(refHummusPatch)}
+</code></pre>
+
+Delete a key/value off an Entity with <code>db.delete()</code>.
+
+<pre><code>
+{#if refHummus}
+  let ref = await db.delete("{refHummus['@id']}", {r(hummusLineDel)})
+{/if}
+</code></pre>
+
+
+This will return the entire updated Entity:
+<pre><code>
+// ref
+{r(refHummusLineDel)}
+</code></pre>
+
+Or delete the entire entity:
+
+<pre><code>
+{#if refHummus}
+  let ref = await db.delete("{refHummus['@id']}"})
+{/if}
+</code></pre>
+
+Which will return <code>null</code>
+<pre><code>
+// ref
+{refHummusDel}
 </code></pre>
