@@ -32,9 +32,19 @@ export const put = (persist, getter) => async (id, update) => {
     .map(p => `<${id}> ${p.includes(':') ? p : ns(p)} ?o .`)
   const result = await persist({ins, del})
   const doc = await getter(`construct {<${id}> ?p ?o } where {<${id}> ?p ?o .}`)
-  console.log(doc)
   let returnLD = await compact(doc)
-  console.log(returnLD)
+  return returnLD
+}
+
+export const patch = (persist, getter) => async (id, update) => {
+  // this is a lot like PUT
+  let Doc = structuredClone(update)
+  Doc['@id'] = id
+  let ld = contextualize(Doc)
+  const ins = await toTriples(ld)
+  const result = await persist({ins})
+  const doc = await getter(`construct {<${id}> ?p ?o } where {<${id}> ?p ?o .}`)
+  let returnLD = await compact(doc)
   return returnLD
 }
 

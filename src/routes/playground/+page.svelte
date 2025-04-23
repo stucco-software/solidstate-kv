@@ -33,10 +33,16 @@
   let hummusUpdate = {
     "ingredient": ["Chickpeas", "Lemon"]
   }
+
+  let refHummusPatch = "…"
+  let hummusPatch = {
+    "ingredient": "Olive Oil"
+  }
   const run = async (db) => {
     refHummus = await db.post(hummus)
     refChickpeas = await db.post(chickpeas)
     refHummusUpdate = await db.put(refHummus['@id'], hummusUpdate)
+    refHummusPatch = await db.patch(refHummus['@id'], hummusPatch)
     let clear = await db.clear()
   }
   onMount(async () => {
@@ -114,4 +120,18 @@ This will return the entire updated Entity:
 <pre><code>
 // ref
 {r(refHummusUpdate)}
+</code></pre>
+
+Add to the existing value of an Entity with <code>db.patch()</code>.
+
+<pre><code>
+{#if refHummus}
+  let ref = await db.patch("{refHummus['@id']}", {r(hummusPatch)})
+{/if}
+</code></pre>
+
+This will return the entire updated Entity:
+<pre><code>
+// ref
+{r(refHummusPatch)}
 </code></pre>

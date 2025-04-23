@@ -34,7 +34,6 @@ const querystore = () => {
 const quadstore = () => {
   return async ({ins, del}) => {
     let err
-    console.log(ins)
     await store.open()
 
     let insQ = `insert {

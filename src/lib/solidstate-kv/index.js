@@ -1,6 +1,6 @@
 import localPersister from './local-persister'
 import {
-  put, post, clear, getEntity
+  put, post, patch, clear, getEntity
 } from './crud'
 
 const configureStore = (config) => {
@@ -19,6 +19,7 @@ const SolidState = async (config) => {
     persister: persist,
     post: post(persist, getter),
     put: put(persist, getter),
+    patch: patch(persist, getter),
     get: getEntity(persist),
     clear: clear(persist)
   }
