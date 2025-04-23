@@ -13,11 +13,26 @@ const engine = new Engine(store)
 const querystore = () => {
   return async (query) => {
     await store.open()
-    let stream = await engine.queryQuads(query)
-    let doc = {}
+    let stream
+    try {
+      stream = await engine.queryQuads(query)
+    } catch (e) {
+      return {
+        message: e,
+        error: true,
+        query,
+      }
+    }
+    let docMap = new Map()
     const quads = await stream.toArray()
     quads.forEach(quad => {
-      doc['@id'] = quad.subject.value
+      let s = quad.subject.value
+      let doc = docMap.get(s)
+      if (!doc) {
+        docMap.set(s, {})
+        doc = docMap.get(s)
+      }
+      doc['@id'] = s
       let p = quad.predicate.value.replace('http://www.w3.org/1999/02/22-rdf-syntax-ns#', '@')
       let o = quad.object.value
       if (doc[p]) {
@@ -25,8 +40,11 @@ const querystore = () => {
       } else {
         doc[p] = o
       }
+      docMap.set(s, doc)
     })
-    return doc
+    await store.close()
+    const docs = [...docMap.values()]
+    return docs.length > 1 ? docs : docs[0]
   }
 }
 
@@ -49,6 +67,7 @@ const quadstore = () => {
       }
     `
     let result = await engine.queryVoid(query)
+    await store.close()
     return result
   }
 }

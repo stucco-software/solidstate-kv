@@ -14,13 +14,16 @@ export const post = (persist, getter) => async (doc) => {
     }
     Doc['@id'] = `uuid:${uuid}`
   }
+
   let ld = contextualize(Doc)
+
   const triples = await toTriples(ld)
   const result = await persist({ins: triples})
   return Doc
 }
 
 const ns = (p) => `<${context['@base']}${context['@vocab']}${p}>`
+const sub = (id) => `<${context['@base']}${id}>`
 
 export const put = (persist, getter) => async (id, update) => {
   let Doc = structuredClone(update)
@@ -73,7 +76,8 @@ export const deleteStatements = (persist, getter) => async (id, update) => {
 }
 
 export const getEntity = (getter) => async (id, shape) => {
-  console.log(`plz get this thingy`, id)
+
+  // shape?
   // let response = await getter(`${context['@base']}${id}`)
   // let entity = response.results.bindings.reduce((acc, cur) => {
   //   let k = cur.p.value.replace(context['@base'] + context['@vocab'], '')
@@ -86,11 +90,22 @@ export const getEntity = (getter) => async (id, shape) => {
   //   "@id": id
   // })
 
-  return {doop: 'woop'}
+  let s = id.includes(':') ? `<${id}>` : sub(id)
+  const doc = await getter(`construct {${s} ?p ?o } where {${s} ?p ?o .}`)
+  let returnLD = await compact(doc)
+  return returnLD
+}
+
+export const getAll = (getter) => async () => {
+  const docs = await getter(`construct {?s ?p ?o } where {?s ?p ?o .}`)
+  let ld = contextualize({
+    "@graph": arrayify(docs)
+  })
+  let returnLD = await compact(ld)
+  return returnLD['@graph']
 }
 
 export const clear = (persist) => async () => {
-  // const result = await persist({del: `?s ?p ?o`})
-  let result
+  const result = await persist({del: `?s ?p ?o`})
   return result
 }

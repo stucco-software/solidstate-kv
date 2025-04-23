@@ -30,6 +30,18 @@
     "name": "Chickpeas"
   }
 
+  let lemon = {
+    "@id": "lemon",
+    "@type": "Ingredient",
+    "name": "Lemon"
+  }
+
+  let oliveOil = {
+    "@id": "olive-oil",
+    "@type": "Ingredient",
+    "name": "Olive Oil"
+  }
+
   let refHummusUpdate = "…"
   let hummusUpdate = {
     "ingredient": ["Chickpeas", "Lemon"]
@@ -47,13 +59,22 @@
 
   let refHummusDel = "…"
 
+  let refChickpeaGet = "…"
+  let refGetAll = "…"
+
+
   const run = async (db) => {
     refHummus = await db.post(hummus)
     refChickpeas = await db.post(chickpeas)
+    await db.post(lemon)
+    await db.post(oliveOil)
     refHummusUpdate = await db.put(refHummus['@id'], hummusUpdate)
     refHummusPatch = await db.patch(refHummus['@id'], hummusPatch)
     refHummusLineDel = await db.delete(refHummus['@id'], hummusLineDel)
     refHummusDel = await db.delete(refHummus['@id'])
+
+    refChickpeaGet = await db.get(refChickpeas['@id'])
+    refGetAll = await db.getAll()
 
     let clear = await db.clear()
   }
@@ -175,4 +196,24 @@ Which will return <code>null</code>
 <pre><code>
 // ref
 {refHummusDel}
+</code></pre>
+
+<h2>Get Data</h2>
+
+Get a single item by <code>@id</code> with <code>db.get()</code>
+<pre><code>
+{#if refChickpeas }
+  let ref = await db.get("{refChickpeas['@id']}"})
+{r(refChickpeaGet)}
+{/if}
+</code></pre>
+
+
+
+Get a all items with <code>db.getAll()</code>
+<pre><code>
+{#if refGetAll }
+  let ref = await db.getAll()
+{r(refGetAll)}
+{/if}
 </code></pre>
