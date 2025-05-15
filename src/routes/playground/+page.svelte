@@ -79,7 +79,7 @@
     let clear = await db.clear()
   }
   onMount(async () => {
-    let db = await SolidState()
+    let db = SolidState()
     console.log(db)
     run(db)
   })

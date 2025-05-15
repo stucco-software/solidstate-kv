@@ -52,11 +52,12 @@ const quadstore = () => {
   return async ({ins, del}) => {
     let err
     await store.open()
+
     let insQ = `insert {
-      ${arrayify(ins).join('')}
+      ${ins}
     }`
     let delQ = `delete {
-      ${arrayify(del).join('')}
+      ${del}
     }`
     let query = `
       ${del ? delQ : ''}

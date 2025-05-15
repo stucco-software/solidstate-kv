@@ -1,0 +1,5 @@
+/src/lib/snippets
+/src/lib/ld
+/src/lib/arrayify.js
+/src/lib/asyncMap.js
+/src/lib/*.svelte

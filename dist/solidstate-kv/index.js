@@ -12,7 +12,7 @@ const configureStore = (config) => {
   }
 }
 
-const SolidState = (config) => {
+const SolidState = async (config) => {
   const {persist, getter} = configureStore(config)
   return {
     version: "0.0.1",
