@@ -21,6 +21,8 @@
   let hummus = {
     "@type": "Food",
     "name": "Hummus",
+    "vegetarian": true,
+    "number": 10,
     "ingredient": ["Garbanzo Beans", "Lemon"]
   }
   let refChickpeas
@@ -71,6 +73,7 @@
   const run = async (db) => {
     refHummus = await db.post(hummus)
     logTime('post hummus')
+    console.log(refHummus)
     refChickpeas = await db.post(chickpeas)
     logTime('post chickpeas')
     await db.post(lemon)

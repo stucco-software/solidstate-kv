@@ -10,6 +10,10 @@ const df = new DataFactory()
 const store = new Quadstore({backend, dataFactory: df})
 const engine = new Engine(store)
 
+const STRING = 'http://www.w3.org/2001/XMLSchema#string'
+const BOOLEAN = 'http://www.w3.org/2001/XMLSchema#boolean'
+const INTEGER = 'http://www.w3.org/2001/XMLSchema#integer'
+
 const querystore = () => {
   return async (query) => {
     let stream
@@ -33,7 +37,23 @@ const querystore = () => {
       }
       doc['@id'] = s
       let p = quad.predicate.value.replace('http://www.w3.org/1999/02/22-rdf-syntax-ns#', '@')
-      let o = quad.object.value
+      let o
+      if (quad.object.datatype) {
+        let type = quad.object.datatype.value
+        switch (true) {
+          case type === BOOLEAN:
+            o = quad.object.value === 'true'
+            break;
+          case type === INTEGER:
+            o = Number.parseInt(quad.object.value)
+            break;
+          default:
+            o = quad.object.value
+            break;
+        }
+      } else {
+        o = quad.object.value
+      }
       if (doc[p]) {
         doc[p] = [...arrayify(doc[p]), o]
       } else {
