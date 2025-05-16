@@ -62,24 +62,39 @@
   let refChickpeaGet = "…"
   let refGetAll = "…"
 
+  let start = Date.now()
+  const logTime = (msg) => {
+    console.log(`${msg}: ${Date.now() - start}ms`)
+    start = Date.now()
+  }
 
   const run = async (db) => {
     refHummus = await db.post(hummus)
+    logTime('post hummus')
     refChickpeas = await db.post(chickpeas)
+    logTime('post chickpeas')
     await db.post(lemon)
+    logTime('post lemon')
     await db.post(oliveOil)
+    logTime('post olive oil')
     refHummusUpdate = await db.put(refHummus['@id'], hummusUpdate)
+    logTime('put hummus')
     refHummusPatch = await db.patch(refHummus['@id'], hummusPatch)
+    logTime('patch hummus')
     refHummusLineDel = await db.delete(refHummus['@id'], hummusLineDel)
+    logTime('delete hummus prop')
     refHummusDel = await db.delete(refHummus['@id'])
-
+    logTime('delete hummus')
     refChickpeaGet = await db.get(refChickpeas['@id'])
+    logTime('get checkpeas')
     refGetAll = await db.getAll()
+    logTime('get all')
 
     let clear = await db.clear()
   }
   onMount(async () => {
-    let db = SolidState()
+    let db = await SolidState()
+    logTime('init')
     console.log(db)
     run(db)
   })

@@ -1,5 +1,5 @@
 export default SolidState;
-declare function SolidState(config: any): Promise<{
+declare function SolidState(config: any): {
     version: string;
     persister: any;
     getter: any;
@@ -10,4 +10,4 @@ declare function SolidState(config: any): Promise<{
     getAll: () => Promise<any>;
     delete: (id: any, update: any) => Promise<any>;
     clear: () => Promise<any>;
-}>;
+};

@@ -12,7 +12,6 @@ const engine = new Engine(store)
 
 const querystore = () => {
   return async (query) => {
-    await store.open()
     let stream
     try {
       stream = await engine.queryQuads(query)
@@ -42,7 +41,6 @@ const querystore = () => {
       }
       docMap.set(s, doc)
     })
-    await store.close()
     const docs = [...docMap.values()]
     return docs.length > 1 ? docs : docs[0]
   }
@@ -51,7 +49,6 @@ const querystore = () => {
 const quadstore = () => {
   return async ({ins, del}) => {
     let err
-    await store.open()
     let insQ = `insert {
       ${arrayify(ins).join('')}
     }`
@@ -66,14 +63,17 @@ const quadstore = () => {
       }
     `
     let result = await engine.queryVoid(query)
-    await store.close()
     return result
   }
 }
 
-const localPersister = () => {
+const localPersister = async () => {
   switch(true) {
     case typeof window !== 'undefined':
+      try {
+        await store.close ()
+      } catch (e) {}
+      await store.open()
       return {
         persist: quadstore(),
         getter: querystore()
